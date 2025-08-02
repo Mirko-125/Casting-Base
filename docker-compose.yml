@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:15
+    container_name: casting-database
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+volumes:
+  db-data:
