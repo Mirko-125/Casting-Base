@@ -26,5 +26,6 @@ namespace CastingBase
         public required string Position { get; set; }
         public string? RegistrationToken { get; set; }
         public int StepCompleted { get; set; } = 0;
+        public string? ProfilePhoto { get; set; }
     }
 }

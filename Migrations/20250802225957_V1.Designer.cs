@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace castingbase.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250802192840_V1")]
+    [Migration("20250802225957_V1")]
     partial class V1
     {
         /// <inheritdoc />
@@ -63,6 +63,9 @@ namespace castingbase.Migrations
 
                     b.Property<string>("Position")
                         .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProfilePhoto")
                         .HasColumnType("text");
 
                     b.Property<string>("RegistrationToken")

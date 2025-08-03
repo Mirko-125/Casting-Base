@@ -7,8 +7,13 @@ services:
       - "5432:5432"
     env_file:
       - .env
+    environment:
+      UPLOAD__ProfilePhotoDirectory: "/app/uploads/profiles"
+
     volumes:
       - db-data:/var/lib/postgresql/data
+      - uploads_data:/app/uploads/profiles
 
 volumes:
   db-data:
+  uploads_data:

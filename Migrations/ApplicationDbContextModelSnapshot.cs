@@ -62,6 +62,9 @@ namespace castingbase.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("ProfilePhoto")
+                        .HasColumnType("text");
+
                     b.Property<string>("RegistrationToken")
                         .HasColumnType("text");
 

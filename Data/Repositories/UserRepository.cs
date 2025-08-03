@@ -8,6 +8,7 @@ namespace CastingBase.Repositories
         Task<User> PostBaseUserAsync(User user);
         Task<User?> GetBaseUserByTokenAsync(string token);
         Task<int> DeleteExpiredBaseUserAsync();
+        Task<User> GetUserByIdAsync(Guid userId);
         Task PutBaseUserAsync(User user);
     }
     public class UserRepository : IUserRepository
@@ -37,6 +38,14 @@ namespace CastingBase.Repositories
 
             _db.Users.RemoveRange(expired);
             return await _db.SaveChangesAsync();
+        }
+
+        public async Task<User> GetUserByIdAsync(Guid userId)
+        {
+            var user = await _db.Users.FindAsync(userId);
+            if (user == null)
+                throw new KeyNotFoundException($"User (ID = {userId}) not found");
+            return user;
         }
 
         public async Task PutBaseUserAsync(User user)

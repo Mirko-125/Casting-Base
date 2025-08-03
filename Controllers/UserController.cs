@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
+using CastingBase.Helpers;
 using CastingBase.Services;
 using CastingBase.DTOs;
 using Npgsql;
@@ -77,6 +78,41 @@ namespace CastingBase.Controllers
             {
                 return StatusCode(500, new { message = ex.Message });
             }
+        }
+
+        [HttpPost("/partial/profilephoto/upload")]
+        public async Task<IActionResult> UploadProfilePhoto(Guid userId, IFormFile file)
+        {
+            try
+            {
+                var filename = await _svc.UploadProfilePhotoAsync(userId, file);
+                return Ok(new { filename });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("/partial/profilephoto/download")]
+        public async Task<IActionResult> GetProfilePhoto(Guid userId)
+        {
+            var user = await _svc.GetUserByIdAsync(userId);
+
+            if (user == null || string.IsNullOrEmpty(user.ProfilePhoto))
+            {
+                return NotFound();
+            }
+
+            var filePath = _svc.GetProfilePhotoPath(user.ProfilePhoto);
+
+            if (!System.IO.File.Exists(filePath))
+            {
+                return NotFound();
+            }
+
+            var contentType = FileHelper.GetContentType(filePath);
+            return PhysicalFile(filePath, contentType);
         }
     }
 }

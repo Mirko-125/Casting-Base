@@ -27,6 +27,7 @@ namespace castingbase.Migrations
                     Position = table.Column<string>(type: "text", nullable: false),
                     RegistrationToken = table.Column<string>(type: "text", nullable: true),
                     StepCompleted = table.Column<int>(type: "integer", nullable: false),
+                    ProfilePhoto = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
