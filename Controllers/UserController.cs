@@ -71,7 +71,8 @@ namespace CastingBase.Controllers
                     user.Gender,
                     user.PhoneNumber,
                     user.EMail,
-                    user.Position
+                    user.Position,
+                    // user.StepCompleted, | Da pokaze na frontu da mora da dovrsi registraciju
                 });
             }
             catch (Exception ex)
@@ -114,5 +115,15 @@ namespace CastingBase.Controllers
             var contentType = FileHelper.GetContentType(filePath);
             return PhysicalFile(filePath, contentType);
         }
+        [HttpGet("/partial/profilephoto/metadata")]
+        public async Task<IActionResult> GetProfilePhotoMetadata(Guid userId)
+        {
+            var user = await _svc.GetUserByIdAsync(userId);
+            if (user == null || string.IsNullOrEmpty(user.ProfilePhoto))
+                return NotFound();
+
+            return Ok(new { user.ProfilePhoto });
+        }
+
     }
 }
