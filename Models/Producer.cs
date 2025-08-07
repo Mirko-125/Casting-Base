@@ -6,6 +6,9 @@ namespace CastingBase
 {
     public class Producer : User
     {
-
+        [Required]
+        public required string Bio { get; set; }
+        [Required]
+        public required DateOnly DateOfBirth { get; set; }
     }
 }
