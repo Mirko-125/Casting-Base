@@ -12,7 +12,12 @@ namespace CastingBase.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _svc;
-        public UserController(IUserService svc) => _svc = svc;
+        private readonly ILogger<UserController> _log;
+        public UserController(ILogger<UserController> log, IUserService svc)
+        {
+            _log = log;
+            _svc = svc;
+        }
 
         [HttpPost("/partial/register")]
         public async Task<IActionResult> RegisterBaseUser([FromBody] BaseUserDTO dto)
@@ -26,7 +31,7 @@ namespace CastingBase.Controllers
                     HttpOnly = true,
                     Secure = true,
                     SameSite = SameSiteMode.None,
-                    Path = "/profile/completion",
+                    Path = "/",
                     MaxAge = TimeSpan.FromMinutes(60)
                 });
 
@@ -115,14 +120,40 @@ namespace CastingBase.Controllers
             var contentType = FileHelper.GetContentType(filePath);
             return PhysicalFile(filePath, contentType);
         }
-        [HttpGet("/partial/profilephoto/metadata")]
-        public async Task<IActionResult> GetProfilePhotoMetadata(Guid userId)
-        {
-            var user = await _svc.GetUserByIdAsync(userId);
-            if (user == null || string.IsNullOrEmpty(user.ProfilePhoto))
-                return NotFound();
 
-            return Ok(new { user.ProfilePhoto });
+        [HttpPost("/actor/register")]
+        public async Task<IActionResult> CompleteActorRegistration([FromBody] ActorDTO dto)
+        {
+            var token = Request.Cookies["registration_token"];
+            if (string.IsNullOrEmpty(token))
+            {
+                return BadRequest(new { message = "Registration token is missing." });
+            }
+
+            try
+            {
+                var user = await _svc.RegisterActorAsync(token, dto);
+
+                Response.Cookies.Delete("registration_token", new CookieOptions
+                {
+                    Path = "/profile/completion"
+                });
+
+                return Ok(user);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (DbUpdateException dbEx)
+            {
+                _log.LogError(dbEx, "DB update failed. Inner: {Inner}", dbEx.InnerException?.Message);
+                return StatusCode(500, new { message = dbEx.InnerException?.Message ?? dbEx.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
 
     }

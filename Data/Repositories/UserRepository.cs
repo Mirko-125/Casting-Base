@@ -25,7 +25,10 @@ namespace CastingBase.Repositories
 
         public Task<User?> GetBaseUserByTokenAsync(string token)
         {
-            return _db.Users.FirstOrDefaultAsync(u => u.RegistrationToken == token);
+            return _db.Users
+                .Where(u => u.RegistrationToken == token && u.StepCompleted == 1)
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
         }
         public async Task<int> DeleteExpiredBaseUserAsync()
         {
@@ -50,7 +53,20 @@ namespace CastingBase.Repositories
 
         public async Task PutBaseUserAsync(User user)
         {
+            var trackedEntry = _db.ChangeTracker.Entries<User>().FirstOrDefault(e => e.Entity.Id == user.Id);
+            if (trackedEntry != null)
+            {
+
+                Console.WriteLine($"[Repo] Detaching tracked entry of type {trackedEntry.Entity.GetType().Name} (State={trackedEntry.State})");
+                trackedEntry.State = EntityState.Detached;
+            }
+            var exists = await _db.Users.AsNoTracking().AnyAsync(u => u.Id == user.Id);
+            if (!exists)
+            {
+                throw new KeyNotFoundException($"User (ID = {user.Id}) not found");
+            }
             _db.Users.Update(user);
+
             await _db.SaveChangesAsync();
         }
 

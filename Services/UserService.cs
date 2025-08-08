@@ -11,6 +11,7 @@ namespace CastingBase.Services
         Task<string> UploadProfilePhotoAsync(Guid userId, IFormFile file);
         Task<User> GetUserByIdAsync(Guid userId);
         string GetProfilePhotoPath(string filename);
+        Task<User> RegisterActorAsync(string token, ActorDTO dto);
     }
     public class UserService : IUserService
     {
@@ -131,6 +132,39 @@ namespace CastingBase.Services
                 throw new ArgumentException("No such file.");
             }
             return Path.Combine(_uploadDirectory, filename);
+        }
+        public async Task<User> RegisterActorAsync(string token, ActorDTO dto)
+        {
+            var user = await _repo.GetBaseUserByTokenAsync(token);
+            if (user == null || user.StepCompleted != 1)
+            {
+                throw new KeyNotFoundException("Invalid or expired token.");
+            }
+
+            var actor = new Actor
+            {
+                Id = user.Id,
+                CreatedAt = user.CreatedAt,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Username = user.Username,
+                Nationality = user.Nationality,
+                Gender = user.Gender,
+                PhoneNumber = user.PhoneNumber,
+                EMail = user.EMail,
+                PassHash = user.PassHash,
+                Position = user.Position,
+                StepCompleted = 2,
+                ProfilePhoto = user.ProfilePhoto,
+                // | DTO
+                Height = dto.Height,
+                Weight = dto.Weight,
+                Bio = dto.Bio,
+                DateOfBirth = dto.DateOfBirth
+            };
+
+            await _repo.PutBaseUserAsync(actor);
+            return actor;
         }
     }
 }

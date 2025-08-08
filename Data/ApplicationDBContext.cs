@@ -29,6 +29,15 @@ namespace CastingBase.Data
 
             var user = modelBuilder.Entity<User>();
 
+            modelBuilder.Entity<User>()
+                .HasDiscriminator<string>("UserType")
+                .HasValue<User>("BaseUser")
+                .HasValue<Actor>("Actor");
+
+            modelBuilder.Entity<User>()
+                .Property("UserType")
+                .HasDefaultValue("BaseUser");
+
             user.HasIndex(u => u.Username)
                 .IsUnique()
                 .HasDatabaseName("IX_User_Username");
@@ -41,6 +50,14 @@ namespace CastingBase.Data
                 .IsUnique()
                 .HasDatabaseName("IX_User_PhoneNumber");
 
+
+            modelBuilder.Entity<Actor>(actor =>
+                {
+                    actor.Property(a => a.Height).IsRequired();
+                    actor.Property(a => a.Weight).IsRequired();
+                    actor.Property(a => a.Bio).IsRequired();
+                    actor.Property(a => a.DateOfBirth).IsRequired();
+                });
         }
     }
 }
