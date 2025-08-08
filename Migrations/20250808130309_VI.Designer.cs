@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace castingbase.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250807152105_ActorInheritacne")]
-    partial class ActorInheritacne
+    [Migration("20250808130309_VI")]
+    partial class VI
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -79,8 +79,10 @@ namespace castingbase.Migrations
 
                     b.Property<string>("UserType")
                         .IsRequired()
+                        .ValueGeneratedOnAdd()
                         .HasMaxLength(8)
-                        .HasColumnType("character varying(8)");
+                        .HasColumnType("character varying(8)")
+                        .HasDefaultValue("BaseUser");
 
                     b.Property<string>("Username")
                         .IsRequired()
@@ -115,7 +117,7 @@ namespace castingbase.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("DateOfBirth")
+                    b.Property<DateOnly>("DateOfBirth")
                         .HasColumnType("date");
 
                     b.Property<double>("Height")

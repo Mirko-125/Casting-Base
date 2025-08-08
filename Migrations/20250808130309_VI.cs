@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace castingbase.Migrations
 {
     /// <inheritdoc />
-    public partial class V1 : Migration
+    public partial class VI : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -28,6 +28,11 @@ namespace castingbase.Migrations
                     RegistrationToken = table.Column<string>(type: "text", nullable: true),
                     StepCompleted = table.Column<int>(type: "integer", nullable: false),
                     ProfilePhoto = table.Column<string>(type: "text", nullable: true),
+                    UserType = table.Column<string>(type: "character varying(8)", maxLength: 8, nullable: false, defaultValue: "BaseUser"),
+                    Height = table.Column<double>(type: "double precision", nullable: true),
+                    Weight = table.Column<double>(type: "double precision", nullable: true),
+                    Bio = table.Column<string>(type: "text", nullable: true),
+                    DateOfBirth = table.Column<DateOnly>(type: "date", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },

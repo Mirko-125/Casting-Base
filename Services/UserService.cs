@@ -140,7 +140,6 @@ namespace CastingBase.Services
             {
                 throw new KeyNotFoundException("Invalid or expired token.");
             }
-
             var actor = new Actor
             {
                 Id = user.Id,
@@ -156,14 +155,14 @@ namespace CastingBase.Services
                 Position = user.Position,
                 StepCompleted = 2,
                 ProfilePhoto = user.ProfilePhoto,
-                // | DTO
                 Height = dto.Height,
                 Weight = dto.Weight,
                 Bio = dto.Bio,
                 DateOfBirth = dto.DateOfBirth
             };
-
             await _repo.PutBaseUserAsync(actor);
+            var savedActor = await _repo.GetActorByIdAsync(actor.Id);
+            if (savedActor != null) return savedActor;
             return actor;
         }
     }

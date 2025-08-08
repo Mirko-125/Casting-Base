@@ -136,7 +136,7 @@ namespace CastingBase.Controllers
 
                 Response.Cookies.Delete("registration_token", new CookieOptions
                 {
-                    Path = "/profile/completion"
+                    Path = "/"
                 });
 
                 return Ok(user);

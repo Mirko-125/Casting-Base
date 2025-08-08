@@ -10,6 +10,7 @@ namespace CastingBase.Repositories
         Task<int> DeleteExpiredBaseUserAsync();
         Task<User> GetUserByIdAsync(Guid userId);
         Task PutBaseUserAsync(User user);
+        Task<Actor?> GetActorByIdAsync(Guid id);
     }
     public class UserRepository : IUserRepository
     {
@@ -68,6 +69,13 @@ namespace CastingBase.Repositories
             _db.Users.Update(user);
 
             await _db.SaveChangesAsync();
+        }
+        public Task<Actor?> GetActorByIdAsync(Guid id)
+        {
+            return _db.Users
+                      .OfType<Actor>()
+                      .AsNoTracking()
+                      .FirstOrDefaultAsync(a => a.Id == id);
         }
 
     }
