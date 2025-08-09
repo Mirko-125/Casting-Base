@@ -8,7 +8,6 @@ namespace CastingBase
     {
         [Required]
         public required string Bio { get; set; }
-        [Required]
-        public required DateOnly DateOfBirth { get; set; }
+        public Production? Production { get; set; }
     }
 }

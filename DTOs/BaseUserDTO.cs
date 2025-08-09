@@ -13,3 +13,4 @@ namespace CastingBase.DTOs
         public required string Position { get; set; }
     }
 }
+

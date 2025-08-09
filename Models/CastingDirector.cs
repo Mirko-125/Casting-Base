@@ -6,6 +6,6 @@ namespace CastingBase
 {
     public class CastingDirector : User
     {
-
+        public Production? Production { get; set; }
     }
 }

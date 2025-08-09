@@ -18,5 +18,7 @@ namespace CastingBase
         public required string Address { get; set; }
         [Required]
         public required string About { get; set; }
+        [Required]
+        public ICollection<User> Users { get; set; } = new List<User>();
     }
 }
