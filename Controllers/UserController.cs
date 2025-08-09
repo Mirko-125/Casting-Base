@@ -11,12 +11,14 @@ namespace CastingBase.Controllers
     [Route("api/users")]
     public class UserController : ControllerBase
     {
-        private readonly IUserService _svc;
         private readonly ILogger<UserController> _log;
-        public UserController(ILogger<UserController> log, IUserService svc)
+        private readonly IUserService _svc;
+        private readonly IProductionService _psvc;
+        public UserController(ILogger<UserController> log, IUserService svc, IProductionService psvc)
         {
             _log = log;
             _svc = svc;
+            _psvc = psvc;
         }
 
         [HttpPost("/partial/register")]
@@ -155,6 +157,114 @@ namespace CastingBase.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+        [HttpPost("/producer/register/{productionId:guid}")]
+        public async Task<IActionResult> CompleteProducerRegistration(Guid productionId, [FromBody] ProducerDTO dto)
+        {
+            var token = Request.Cookies["registration_token"];
+            if (string.IsNullOrEmpty(token))
+            {
+                return BadRequest(new { message = "Registration token is missing." });
+            }
+            try
+            {
+                var producer = await _svc.RegisterProducerAndAssignToProductionAsync(token, dto, productionId);
+                Response.Cookies.Delete("registration_token", new CookieOptions
+                {
+                    Path = "/"
+                });
+                return Ok(producer);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (DbUpdateException dbEx)
+            {
+                _log.LogError(dbEx, "DB update failed while registering producer. Inner: {Inner}", dbEx.InnerException?.Message);
+                return StatusCode(500, new { message = dbEx.InnerException?.Message ?? dbEx.Message });
+            }
+            catch (Exception ex)
+            {
+                _log.LogError(ex, "Failed to complete producer registration.");
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
 
+        [HttpPost("/casting-director/register/{productionId:guid}")]
+        public async Task<IActionResult> CompleteCastingDirectorRegistration(Guid productionId, [FromBody] CastingDirectorDTO dto)
+        {
+            var token = Request.Cookies["registration_token"];
+            if (string.IsNullOrEmpty(token))
+            {
+                return BadRequest(new { message = "Registration token is missing." });
+            }
+            try
+            {
+                var castingDirector = await _svc.RegisterCastingDirectorAndAssignToProductionAsync(token, dto, productionId);
+                Response.Cookies.Delete("registration_token", new CookieOptions
+                {
+                    Path = "/"
+                });
+                return Ok(castingDirector);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (DbUpdateException dbEx)
+            {
+                _log.LogError(dbEx, "DB update failed while registering casting director. Inner: {Inner}", dbEx.InnerException?.Message);
+                return StatusCode(500, new { message = dbEx.InnerException?.Message ?? dbEx.Message });
+            }
+            catch (Exception ex)
+            {
+                _log.LogError(ex, "Failed to complete casting director registration.");
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+        [HttpPost("/director/register/{productionId:guid}")]
+        public async Task<IActionResult> CompleteDirectorRegistration(Guid productionId, [FromBody] DirectorDTO dto)
+        {
+            var token = Request.Cookies["registration_token"];
+            if (string.IsNullOrEmpty(token))
+            {
+                return BadRequest(new { message = "Registration token is missing." });
+            }
+            try
+            {
+                var director = await _svc.RegisterDirectorAndAssignToProductionAsync(token, dto, productionId);
+                Response.Cookies.Delete("registration_token", new CookieOptions
+                {
+                    Path = "/"
+                });
+                return Ok(director);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (DbUpdateException dbEx)
+            {
+                _log.LogError(dbEx, "DB update failed while registering director. Inner: {Inner}", dbEx.InnerException?.Message);
+                return StatusCode(500, new { message = dbEx.InnerException?.Message ?? dbEx.Message });
+            }
+            catch (Exception ex)
+            {
+                _log.LogError(ex, "Failed to complete director registration.");
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
     }
 }

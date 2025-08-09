@@ -11,6 +11,10 @@ namespace CastingBase.Repositories
         Task<User> GetUserByIdAsync(Guid userId);
         Task PutBaseUserAsync(User user);
         Task<Actor?> GetActorByIdAsync(Guid id);
+        Task<Producer?> GetProducerByIdAsync(Guid id);
+        Task<Producer> PostProducerAndAssignToProductionAsync(Producer producer, Guid productionId);
+        Task<CastingDirector> PostCastingDirectorAndAssignToProductionAsync(CastingDirector castingDirector, Guid productionId);
+        Task<Director> PostDirectorAndAssignToProductionAsync(Director director, Guid productionId);
     }
     public class UserRepository : IUserRepository
     {
@@ -78,5 +82,94 @@ namespace CastingBase.Repositories
                       .FirstOrDefaultAsync(a => a.Id == id);
         }
 
+        public Task<Producer?> GetProducerByIdAsync(Guid id)
+        {
+            return _db.Users
+                      .OfType<Producer>()
+                      .AsNoTracking()
+                      .FirstOrDefaultAsync(a => a.Id == id);
+        }
+        public async Task<Producer> PostProducerAndAssignToProductionAsync(Producer producer, Guid productionId)
+        {
+            await using var tx = await _db.Database.BeginTransactionAsync();
+            try
+            {
+                var trackedEntry = _db.ChangeTracker.Entries<User>().FirstOrDefault(e => e.Entity.Id == producer.Id);
+                if (trackedEntry != null) trackedEntry.State = EntityState.Detached;
+                _db.Users.Update(producer);
+                await _db.SaveChangesAsync();
+                _db.Entry(producer).Property("ProductionId").CurrentValue = productionId;
+                _db.Users.Update(producer);
+                await _db.SaveChangesAsync();
+                await tx.CommitAsync();
+                var saved = await _db.Users
+                                      .OfType<Producer>()
+                                      .Include(p => p.Production)
+                                      .AsNoTracking()
+                                      .FirstOrDefaultAsync(p => p.Id == producer.Id);
+
+                return saved ?? producer;
+            }
+            catch
+            {
+                await tx.RollbackAsync();
+                throw;
+            }
+        }
+        public async Task<CastingDirector> PostCastingDirectorAndAssignToProductionAsync(CastingDirector castingDirector, Guid productionId)
+        {
+            await using var tx = await _db.Database.BeginTransactionAsync();
+            try
+            {
+                var trackedEntry = _db.ChangeTracker.Entries<User>().FirstOrDefault(e => e.Entity.Id == castingDirector.Id);
+                if (trackedEntry != null) trackedEntry.State = EntityState.Detached;
+                _db.Users.Update(castingDirector);
+                await _db.SaveChangesAsync();
+                _db.Entry(castingDirector).Property("ProductionId").CurrentValue = productionId;
+                _db.Users.Update(castingDirector);
+                await _db.SaveChangesAsync();
+                await tx.CommitAsync();
+                var saved = await _db.Users
+                                      .OfType<CastingDirector>()
+                                      .Include(p => p.Production)
+                                      .AsNoTracking()
+                                      .FirstOrDefaultAsync(p => p.Id == castingDirector.Id);
+
+                return saved ?? castingDirector;
+            }
+            catch
+            {
+                await tx.RollbackAsync();
+                throw;
+            }
+        }
+
+        public async Task<Director> PostDirectorAndAssignToProductionAsync(Director director, Guid productionId)
+        {
+            await using var tx = await _db.Database.BeginTransactionAsync();
+            try
+            {
+                var trackedEntry = _db.ChangeTracker.Entries<User>().FirstOrDefault(e => e.Entity.Id == director.Id);
+                if (trackedEntry != null) trackedEntry.State = EntityState.Detached;
+                _db.Users.Update(director);
+                await _db.SaveChangesAsync();
+                _db.Entry(director).Property("ProductionId").CurrentValue = productionId;
+                _db.Users.Update(director);
+                await _db.SaveChangesAsync();
+                await tx.CommitAsync();
+                var saved = await _db.Users
+                                      .OfType<Director>()
+                                      .Include(p => p.Production)
+                                      .AsNoTracking()
+                                      .FirstOrDefaultAsync(p => p.Id == director.Id);
+
+                return saved ?? director;
+            }
+            catch
+            {
+                await tx.RollbackAsync();
+                throw;
+            }
+        }
     }
 }

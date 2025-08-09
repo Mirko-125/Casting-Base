@@ -12,16 +12,22 @@ namespace CastingBase.Services
         Task<User> GetUserByIdAsync(Guid userId);
         string GetProfilePhotoPath(string filename);
         Task<User> RegisterActorAsync(string token, ActorDTO dto);
+        Task<User> RegisterProducerAsync(string token, ProducerDTO dto);
+        Task<Producer> RegisterProducerAndAssignToProductionAsync(string token, ProducerDTO dto, Guid productionId);
+        Task<CastingDirector> RegisterCastingDirectorAndAssignToProductionAsync(string token, CastingDirectorDTO dto, Guid productionId);
+        Task<Director> RegisterDirectorAndAssignToProductionAsync(string token, DirectorDTO dto, Guid productionId);
     }
     public class UserService : IUserService
     {
         private readonly IUserRepository _repo;
+        private readonly IProductionRepository _prepo;
         private readonly IPasswordHasher<User> _hasher;
         private readonly string _uploadDirectory;
 
-        public UserService(IUserRepository repo, IPasswordHasher<User> hasher, IWebHostEnvironment env, IConfiguration config)
+        public UserService(IUserRepository repo, IProductionRepository prepo, IPasswordHasher<User> hasher, IWebHostEnvironment env, IConfiguration config)
         {
             _repo = repo;
+            _prepo = prepo;
             _hasher = hasher;
 
             var configured = config["Upload:ProfilePhotoDirectory"];
@@ -164,6 +170,132 @@ namespace CastingBase.Services
             var savedActor = await _repo.GetActorByIdAsync(actor.Id);
             if (savedActor != null) return savedActor;
             return actor;
+        }
+        public async Task<User> RegisterProducerAsync(string token, ProducerDTO dto)
+        {
+            var user = await _repo.GetBaseUserByTokenAsync(token);
+            if (user == null || user.StepCompleted != 1)
+            {
+                throw new KeyNotFoundException("Invalid or expired token.");
+            }
+            var producer = new Producer
+            {
+                Id = user.Id,
+                CreatedAt = user.CreatedAt,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Username = user.Username,
+                Nationality = user.Nationality,
+                Gender = user.Gender,
+                PhoneNumber = user.PhoneNumber,
+                EMail = user.EMail,
+                PassHash = user.PassHash,
+                Position = user.Position,
+                StepCompleted = 2,
+                ProfilePhoto = user.ProfilePhoto,
+                Bio = dto.Bio,
+            };
+            await _repo.PutBaseUserAsync(producer);
+            var savedProducer = await _repo.GetProducerByIdAsync(producer.Id);
+            if (savedProducer != null) return savedProducer;
+            return producer;
+        }
+        public async Task<Producer> RegisterProducerAndAssignToProductionAsync(string token, ProducerDTO dto, Guid productionId)
+        {
+            var user = await _repo.GetBaseUserByTokenAsync(token);
+            if (user == null || user.StepCompleted != 1)
+            {
+                throw new KeyNotFoundException("Invalid or expired token.");
+            }
+
+            var producer = new Producer
+            {
+                Id = user.Id,
+                CreatedAt = user.CreatedAt,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Username = user.Username,
+                Nationality = user.Nationality,
+                Gender = user.Gender,
+                PhoneNumber = user.PhoneNumber,
+                EMail = user.EMail,
+                PassHash = user.PassHash,
+                Position = user.Position,
+                StepCompleted = 2,
+                ProfilePhoto = user.ProfilePhoto,
+                Bio = dto.Bio,
+            };
+
+            var saved = await _repo.PostProducerAndAssignToProductionAsync(producer, productionId);
+            return saved;
+        }
+
+        public async Task<CastingDirector> RegisterCastingDirectorAndAssignToProductionAsync(string token, CastingDirectorDTO dto, Guid productionId)
+        {
+            var user = await _repo.GetBaseUserByTokenAsync(token);
+            if (user == null || user.StepCompleted != 1)
+            {
+                throw new KeyNotFoundException("Invalid or expired token.");
+            }
+
+            var production = await _prepo.GetProductionByIdAsync(productionId);
+            if (production == null)
+                throw new KeyNotFoundException("Selected production not found.");
+
+            if (!production.ProductionCode.Equals(dto.ProductionCode, StringComparison.Ordinal))
+                throw new InvalidOperationException("Production code is invalid.");
+
+
+            var castingDirector = new CastingDirector
+            {
+                Id = user.Id,
+                CreatedAt = user.CreatedAt,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Username = user.Username,
+                Nationality = user.Nationality,
+                Gender = user.Gender,
+                PhoneNumber = user.PhoneNumber,
+                EMail = user.EMail,
+                PassHash = user.PassHash,
+                Position = user.Position,
+                StepCompleted = 2,
+                ProfilePhoto = user.ProfilePhoto,
+            };
+
+            var saved = await _repo.PostCastingDirectorAndAssignToProductionAsync(castingDirector, productionId);
+            return saved;
+        }
+
+        public async Task<Director> RegisterDirectorAndAssignToProductionAsync(string token, DirectorDTO dto, Guid productionId)
+        {
+            var user = await _repo.GetBaseUserByTokenAsync(token);
+            if (user == null || user.StepCompleted != 1)
+            {
+                throw new KeyNotFoundException("Invalid or expired token.");
+            }
+
+            var director = new Director
+            {
+                Id = user.Id,
+                CreatedAt = user.CreatedAt,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Username = user.Username,
+                Nationality = user.Nationality,
+                Gender = user.Gender,
+                PhoneNumber = user.PhoneNumber,
+                EMail = user.EMail,
+                PassHash = user.PassHash,
+                Position = user.Position,
+                StepCompleted = 2,
+                ProfilePhoto = user.ProfilePhoto,
+                Bio = dto.Bio,
+                DateOfBirth = dto.DateOfBirth,
+            };
+
+            var saved = await _repo.PostDirectorAndAssignToProductionAsync(director, productionId);
+            return saved;
         }
     }
 }

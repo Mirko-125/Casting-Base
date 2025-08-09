@@ -1,9 +1,7 @@
 namespace CastingBase.DTOs
 {
-    public class ActorDTO
+    public class DirectorDTO
     {
-        public required double Height { get; set; }
-        public required double Weight { get; set; }
         public required string Bio { get; set; }
         public required DateOnly DateOfBirth { get; set; }
     }
