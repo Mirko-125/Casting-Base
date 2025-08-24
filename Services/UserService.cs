@@ -59,7 +59,7 @@ namespace CastingBase.Services
                 RegistrationToken = Guid.NewGuid().ToString()
             };
 
-            user.PassHash = _hasher.HashPassword(user, dto.PassHash);
+            user.PassHash = BCrypt.Net.BCrypt.HashPassword(dto.PassHash, BCrypt.Net.BCrypt.GenerateSalt(12));
 
             var created = await _repo.PostBaseUserAsync(user);
             return created.RegistrationToken!;

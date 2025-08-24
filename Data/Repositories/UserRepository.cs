@@ -9,6 +9,8 @@ namespace CastingBase.Repositories
         Task<User?> GetBaseUserByTokenAsync(string token);
         Task<int> DeleteExpiredBaseUserAsync();
         Task<User> GetUserByIdAsync(Guid userId);
+        Task<User?> GetUserByUsernameAsync(string username);
+        Task<User?> GetUserByEmailAsync(string email);
         Task PutBaseUserAsync(User user);
         Task<Actor?> GetActorByIdAsync(Guid id);
         Task<Producer?> GetProducerByIdAsync(Guid id);
@@ -170,6 +172,16 @@ namespace CastingBase.Repositories
                 await tx.RollbackAsync();
                 throw;
             }
+        }
+
+        public async Task<User?> GetUserByUsernameAsync(string username)
+        {
+            return await _db.Users.FirstOrDefaultAsync(u => u.Username == username);
+        }
+
+        public async Task<User?> GetUserByEmailAsync(string email)
+        {
+            return await _db.Users.FirstOrDefaultAsync(u => u.EMail == email);
         }
     }
 }
